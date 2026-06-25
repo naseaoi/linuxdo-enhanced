@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const roots = ['src', 'scripts'];
-const extraFiles = ['vite.config.js', 'dev.user.js'];
+const extraFiles = ['vite.config.js', 'eslint.config.js', 'dev.user.js'];
 
 function collectJsFiles(dir, files = []) {
   for (const name of readdirSync(dir)) {
@@ -18,10 +18,7 @@ function collectJsFiles(dir, files = []) {
   return files;
 }
 
-const files = [
-  ...roots.flatMap(root => collectJsFiles(root)),
-  ...extraFiles
-];
+const files = [...roots.flatMap((root) => collectJsFiles(root)), ...extraFiles];
 
 for (const file of files) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });

@@ -4,14 +4,14 @@ import {
   HIDDEN_ITEM_CLASS,
   PROCESSED_ITEM_ATTR,
   LIGHT_THEME_BODY_CLASS,
-  PANEL_FORM_INPUT_SELECTOR
+  PANEL_FORM_INPUT_SELECTOR,
 } from '../modules/constants.js';
 
 export function buildBasePanelCss() {
   return `
     .${HIDDEN_ITEM_CLASS},
-    tr.topic-list-item[data-ld-enh-processed="blocked"],
-    div.fps-result[data-ld-enh-processed="blocked"] {
+    tr.topic-list-item[${PROCESSED_ITEM_ATTR}="blocked"],
+    div.fps-result[${PROCESSED_ITEM_ATTR}="blocked"] {
       display: none !important;
       visibility: hidden !important;
       height: 0 !important;

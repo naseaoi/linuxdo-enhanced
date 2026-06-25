@@ -10,11 +10,12 @@ import {
   UI_TOGGLE_KEYS,
   DATE_TEXT_PATTERNS,
   PROCESSABLE_ITEM_SELECTOR,
-  UNPROCESSED_PROCESSABLE_ITEM_SELECTOR
+  UNPROCESSED_PROCESSABLE_ITEM_SELECTOR,
 } from './constants.js';
-import { log, normalizeList, escapeRegExp, getTopicId, parseDateFromText, isHomepageRoute, isUserActivityTopicsPage } from './utils.js';
+import { log, escapeRegExp, getTopicId, parseDateFromText, isHomepageRoute, isUserActivityTopicsPage } from './utils.js';
 import { currentUiToggleStates, visitedTopics, ensureTopicIdentityAttr } from './ad-remover.js';
 import { GM_getValue, GM_setValue } from './gm.js';
+import { getSettingDefault, normalizeSettingValue } from './settings-schema.js';
 
 const ITEM_BLOCKER_MODULE = 'ItemBlocker';
 
@@ -46,9 +47,9 @@ function rebuildBlockedKeywordsRegex() {
 
 export function loadBlockerSettings() {
   applyBlockedCollections({
-    users: normalizeList(GM_getValue(CONFIG_KEY_USERS, [])),
-    keywords: normalizeList(GM_getValue(CONFIG_KEY_KEYWORDS, [])),
-    categories: normalizeList(GM_getValue(CONFIG_KEY_CATEGORIES, []))
+    users: normalizeSettingValue(CONFIG_KEY_USERS, GM_getValue(CONFIG_KEY_USERS, getSettingDefault(CONFIG_KEY_USERS))),
+    keywords: normalizeSettingValue(CONFIG_KEY_KEYWORDS, GM_getValue(CONFIG_KEY_KEYWORDS, getSettingDefault(CONFIG_KEY_KEYWORDS))),
+    categories: normalizeSettingValue(CONFIG_KEY_CATEGORIES, GM_getValue(CONFIG_KEY_CATEGORIES, getSettingDefault(CONFIG_KEY_CATEGORIES))),
   });
 }
 
@@ -56,7 +57,7 @@ export function saveBlockerSettings(getUserInput, getKeywordsInput, getCategorie
   applyBlockedCollections({
     users: getUserInput(),
     keywords: getKeywordsInput(),
-    categories: getCategoriesInput()
+    categories: getCategoriesInput(),
   });
   GM_setValue(CONFIG_KEY_USERS, blockedUsers);
   GM_setValue(CONFIG_KEY_KEYWORDS, blockedKeywords);
@@ -64,13 +65,19 @@ export function saveBlockerSettings(getUserInput, getKeywordsInput, getCategorie
 }
 
 export function loadOldPostBlockerSettings() {
-  blockOldPostsEnabled = GM_getValue(CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED, false);
-  blockOldPostsDays = GM_getValue(CONFIG_KEY_BLOCK_OLD_POSTS_DAYS, 90);
+  blockOldPostsEnabled = normalizeSettingValue(
+    CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED,
+    GM_getValue(CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED, getSettingDefault(CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED)),
+  );
+  blockOldPostsDays = normalizeSettingValue(
+    CONFIG_KEY_BLOCK_OLD_POSTS_DAYS,
+    GM_getValue(CONFIG_KEY_BLOCK_OLD_POSTS_DAYS, getSettingDefault(CONFIG_KEY_BLOCK_OLD_POSTS_DAYS)),
+  );
 }
 
 export function saveOldPostBlockerSettings(enabled, days) {
-  blockOldPostsEnabled = enabled;
-  blockOldPostsDays = days;
+  blockOldPostsEnabled = normalizeSettingValue(CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED, enabled);
+  blockOldPostsDays = normalizeSettingValue(CONFIG_KEY_BLOCK_OLD_POSTS_DAYS, days);
   GM_setValue(CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED, blockOldPostsEnabled);
   GM_setValue(CONFIG_KEY_BLOCK_OLD_POSTS_DAYS, blockOldPostsDays);
 }
@@ -138,18 +145,26 @@ function shouldBlockItem(itemElement) {
       }
     }
     if (blockedKeywordsRegex) {
-      const titleElement = itemElement.querySelector('a.search-link .topic-title span[dir="auto"], a.title span[dir="auto"], a.title.raw-link span[dir="auto"]');
+      const titleElement = itemElement.querySelector(
+        'a.search-link .topic-title span[dir="auto"], a.title span[dir="auto"], a.title.raw-link span[dir="auto"]',
+      );
       if (titleElement) {
         const titleText = titleElement.textContent;
-        if (blockedKeywordsRegex.test(titleText)) { return true; }
+        if (blockedKeywordsRegex.test(titleText)) {
+          return true;
+        }
       }
     }
     if (blockedCategoriesSet.size > 0) {
       const categoryElement = itemElement.querySelector('.badge-category__name');
-      if (categoryElement && blockedCategoriesSet.has(categoryElement.textContent.toLowerCase().trim())) { return true; }
+      if (categoryElement && blockedCategoriesSet.has(categoryElement.textContent.toLowerCase().trim())) {
+        return true;
+      }
       const tagElements = itemElement.querySelectorAll('.discourse-tags a.discourse-tag');
       for (const tagElement of tagElements) {
-        if (blockedCategoriesSet.has(tagElement.textContent.toLowerCase().trim())) { return true; }
+        if (blockedCategoriesSet.has(tagElement.textContent.toLowerCase().trim())) {
+          return true;
+        }
       }
     }
   }
@@ -190,7 +205,7 @@ export function collectProcessableItemsFromRoot(root) {
   if (root.matches(PROCESSABLE_ITEM_SELECTOR)) {
     items.push(root);
   }
-  root.querySelectorAll(PROCESSABLE_ITEM_SELECTOR).forEach(item => items.push(item));
+  root.querySelectorAll(PROCESSABLE_ITEM_SELECTOR).forEach((item) => items.push(item));
   return items;
 }
 
@@ -236,7 +251,7 @@ export function syncVisitedTopicOpacityState() {
 }
 
 export function resetProcessedItems() {
-  document.querySelectorAll(`[${PROCESSED_ITEM_ATTR}]`).forEach(item => {
+  document.querySelectorAll(`[${PROCESSED_ITEM_ATTR}]`).forEach((item) => {
     item.removeAttribute(PROCESSED_ITEM_ATTR);
     item.classList.remove(HIDDEN_ITEM_CLASS);
   });

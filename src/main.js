@@ -1,12 +1,11 @@
-import { PROCESSABLE_ITEM_SELECTOR, RELEVANT_AD_NODE_SELECTOR } from './modules/constants.js';
-import { getTopicId, nodeMatchesOrContains } from './modules/utils.js';
+import { getTopicId } from './modules/utils.js';
 import {
   initAdUIRemoverEarly,
   loadVisitedTopics,
   persistVisitedTopics,
   markTopicAsVisited,
   removeSelectedElementsFromDOM,
-  applyDynamicStyles
+  applyDynamicStyles,
 } from './modules/ad-remover.js';
 import {
   loadBlockerSettings,
@@ -14,12 +13,14 @@ import {
   processAllItems,
   resetProcessedItems,
   applyVisitedOpacityStateToRoots,
-  syncVisitedTopicOpacityState
+  syncVisitedTopicOpacityState,
 } from './modules/item-blocker.js';
 import { loadWebdavSettings } from './modules/webdav.js';
 import { observeThemeChanges, applyPanelTheme } from './modules/theme.js';
-import { createSettingsPanel, injectBaseStyles, setupGlobalClickHandler, ensureSettingsButtonExists, ensureSearchButtonExists } from './modules/ui.js';
+import { createSettingsPanel, injectBaseStyles, setupGlobalClickHandler } from './modules/ui.js';
+import { ensureSettingsButtonExists, ensureSearchButtonExists } from './modules/header-buttons.js';
 import { installRouteObserver } from './modules/route-observer.js';
+import { observeNewItems, observeDynamicAdUiContent } from './modules/dom-observer.js';
 
 let itemProcessingScheduled = false;
 let fullReprocessRequired = false;
@@ -80,7 +81,7 @@ function scheduleItemProcessing({ fullReprocess = false, runDomRemoval = true, r
     processItemsNow({
       runDomRemoval: shouldRunDomRemoval,
       runItemFilter: shouldRunItemFilter || shouldFullReprocess,
-      adScanRoots: shouldFullReprocess ? null : adScanRoots
+      adScanRoots: shouldFullReprocess ? null : adScanRoots,
     });
   };
 
@@ -93,73 +94,6 @@ function scheduleItemProcessing({ fullReprocess = false, runDomRemoval = true, r
 
 function triggerFullReprocess() {
   scheduleItemProcessing({ fullReprocess: true });
-}
-
-function classifyMutations(mutations) {
-  const state = { hasProcessable: false, hasAdNode: false, adRoots: [], processableRoots: [] };
-  const adRootSet = new Set();
-  const processableRootSet = new Set();
-  for (const mutation of mutations) {
-    if (mutation.type !== 'childList' || mutation.addedNodes.length === 0) continue;
-    for (const node of mutation.addedNodes) {
-      if (!state.hasProcessable && nodeMatchesOrContains(node, PROCESSABLE_ITEM_SELECTOR)) {
-        state.hasProcessable = true;
-      }
-      if (nodeMatchesOrContains(node, PROCESSABLE_ITEM_SELECTOR) && node instanceof Element) {
-        processableRootSet.add(node);
-      }
-      if (!state.hasAdNode && nodeMatchesOrContains(node, RELEVANT_AD_NODE_SELECTOR)) {
-        state.hasAdNode = true;
-      }
-      if (nodeMatchesOrContains(node, RELEVANT_AD_NODE_SELECTOR) && node instanceof Element) {
-        adRootSet.add(node);
-      }
-      if (state.hasProcessable && state.hasAdNode) {
-        continue;
-      }
-    }
-  }
-  state.adRoots = Array.from(adRootSet);
-  state.processableRoots = Array.from(processableRootSet);
-  return state;
-}
-
-let itemObserver = null;
-function observeNewItems() {
-  if (itemObserver) itemObserver.disconnect();
-  const targetNode = document.querySelector('#main-outlet');
-  if (!targetNode) { setTimeout(observeNewItems, 500); return; }
-  itemObserver = new MutationObserver((mutations) => {
-    const mutationState = classifyMutations(mutations);
-    if (!mutationState.hasProcessable && !mutationState.hasAdNode) return;
-    if (mutationState.hasProcessable) {
-      applyVisitedOpacityStateToRoots(mutationState.processableRoots);
-      syncVisitedTopicOpacityState();
-    }
-    scheduleItemProcessing({
-      runDomRemoval: mutationState.hasAdNode,
-      runItemFilter: mutationState.hasProcessable,
-      adScanRoots: mutationState.adRoots
-    });
-  });
-  itemObserver.observe(targetNode, { childList: true, subtree: true });
-}
-
-let adUiObserver = null;
-function observeDynamicAdUiContent() {
-  if (adUiObserver) adUiObserver.disconnect();
-  adUiObserver = new MutationObserver((mutations) => {
-    const mutationState = classifyMutations(mutations);
-    if (!mutationState.hasAdNode) return;
-    if (mutationState.hasProcessable) {
-      applyVisitedOpacityStateToRoots(mutationState.processableRoots);
-      syncVisitedTopicOpacityState();
-    }
-    scheduleItemProcessing({ runDomRemoval: true, runItemFilter: mutationState.hasProcessable, adScanRoots: mutationState.adRoots });
-  });
-  const observeBody = () => adUiObserver.observe(document.body, { childList: true, subtree: true });
-  if (document.body) observeBody();
-  else new MutationObserver(function() { if (document.body) { observeBody(); this.disconnect(); } }).observe(document.documentElement, { childList: true });
 }
 
 function runInitialScanWhenReady() {
@@ -176,8 +110,13 @@ function runInitialScanWhenReady() {
 
 function refreshPageContext() {
   applyDynamicStyles();
-  observeNewItems();
-  observeDynamicAdUiContent();
+  const observerOptions = {
+    scheduleItemProcessing,
+    applyVisitedOpacityStateToRoots,
+    syncVisitedTopicOpacityState,
+  };
+  observeNewItems(observerOptions);
+  observeDynamicAdUiContent(observerOptions);
   observeThemeChanges();
   applyPanelTheme();
   ensureSettingsButtonExists();
@@ -219,7 +158,7 @@ function initializeScript() {
   setTimeout(applyPanelTheme, 200);
   triggerFullReprocess();
 
-  window.addEventListener('pageshow', function(event) {
+  window.addEventListener('pageshow', function (event) {
     if (event.persisted) {
       setTimeout(() => {
         triggerFullReprocess();

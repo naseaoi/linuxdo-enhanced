@@ -6,7 +6,7 @@ export const UI_TOGGLE_KEYS = {
   topicPageAds: 'ld_hide_topic_page_ads',
   homepageBanner: 'ld_hide_homepage_banner',
   visitedTopicOpacity: 'ld_visited_topic_opacity',
-  headerSearchIcon: 'ld_show_header_search_icon'
+  headerSearchIcon: 'ld_show_header_search_icon',
 };
 
 export const DEFAULT_UI_TOGGLE_STATES = {
@@ -24,7 +24,7 @@ export const UI_TOGGLE_LABELS = {
   [UI_TOGGLE_KEYS.topicPageAds]: '屏蔽帖子广告',
   [UI_TOGGLE_KEYS.homepageBanner]: '屏蔽首页标题和搜索框',
   [UI_TOGGLE_KEYS.visitedTopicOpacity]: '已读帖子降低透明度',
-  [UI_TOGGLE_KEYS.headerSearchIcon]: '显示首页顶栏搜索图标'
+  [UI_TOGGLE_KEYS.headerSearchIcon]: '显示首页顶栏搜索图标',
 };
 
 export const CONFIG_KEY_USERS = 'linuxdo_blocked_users';
@@ -58,53 +58,63 @@ export const MAX_VISITED_TOPICS = 2000;
 export const VISITED_TOPICS_PERSIST_DELAY = 600;
 
 export const PROCESSABLE_ITEM_SELECTOR = 'tr.topic-list-item, div.fps-result, div.topic-post, article[data-post-id], article[id^="post_"]';
-export const UNPROCESSED_PROCESSABLE_ITEM_SELECTOR = `${PROCESSABLE_ITEM_SELECTOR.split(', ').map(selector => `${selector}:not([${PROCESSED_ITEM_ATTR}])`).join(', ')}`;
+export const UNPROCESSED_PROCESSABLE_ITEM_SELECTOR = `${PROCESSABLE_ITEM_SELECTOR.split(', ')
+  .map((selector) => `${selector}:not([${PROCESSED_ITEM_ATTR}])`)
+  .join(', ')}`;
 
 export const BLOCKER_INPUT_IDS = {
   users: 'ld-blocked-users',
   keywords: 'ld-blocked-keywords',
-  categories: 'ld-blocked-categories'
+  categories: 'ld-blocked-categories',
 };
 
 export const WEBDAV_INPUT_IDS = {
   url: 'ld-webdav-url',
   user: 'ld-webdav-user',
-  pass: 'ld-webdav-pass'
+  pass: 'ld-webdav-pass',
 };
 
 export const PANEL_FORM_INPUT_SELECTOR = `#${SETTINGS_PANEL_ID} textarea, #${SETTINGS_PANEL_ID} input[type="text"], #${SETTINGS_PANEL_ID} input[type="url"], #${SETTINGS_PANEL_ID} input[type="number"], #${SETTINGS_PANEL_ID} input[type="password"]`;
 
 export const REMOVAL_CONFIG = {
-  [UI_TOGGLE_KEYS.globalNotice]: [{
-    selector: 'div.global-notice'
-  }],
-  [UI_TOGGLE_KEYS.homepageTopAd]: [{
-    selector: 'span.discovery-list-container-top-outlet',
-    innerCheck: 'div.house-creative.house-topic-list-top'
-  }],
+  [UI_TOGGLE_KEYS.globalNotice]: [
+    {
+      selector: 'div.global-notice',
+    },
+  ],
+  [UI_TOGGLE_KEYS.homepageTopAd]: [
+    {
+      selector: 'span.discovery-list-container-top-outlet',
+      innerCheck: 'div.house-creative.house-topic-list-top',
+    },
+  ],
   [UI_TOGGLE_KEYS.topicPageAds]: [
     {
       selector: 'div.topic-above-post-stream-outlet',
-      innerCheck: 'div.house-creative.house-topic-above-post-stream'
+      innerCheck: 'div.house-creative.house-topic-above-post-stream',
     },
     {
       selector: 'div.topic-above-suggested-outlet',
-      innerCheck: 'div.house-creative.house-topic-above-suggested'
-    }
+      innerCheck: 'div.house-creative.house-topic-above-suggested',
+    },
   ],
-  [UI_TOGGLE_KEYS.homepageBanner]: [{
-    selector: 'div.welcome-banner'
-  }]
+  [UI_TOGGLE_KEYS.homepageBanner]: [
+    {
+      selector: 'div.welcome-banner',
+    },
+  ],
 };
 
 export const DATE_TEXT_PATTERNS = [
-  /(?:创建日期|创建于|created(?:\s+on)?)\D*(\d{4})\s*[\/\.\-年]\s*(\d{1,2})\s*[\/\.\-月]\s*(\d{1,2})(?:\s*日)?/i,
+  /(?:创建日期|创建于|created(?:\s+on)?)\D*(\d{4})\s*[/.\-年]\s*(\d{1,2})\s*[/.\-月]\s*(\d{1,2})(?:\s*日)?/i,
   /\b(\d{4})-(\d{1,2})-(\d{1,2})\b/,
   /\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b/,
-  /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?/
+  /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?/,
 ];
 
 export const RELEVANT_AD_NODE_SELECTOR = [
-  ...Object.values(REMOVAL_CONFIG).flat().map(cfg => cfg.selector),
-  'div.house-creative'
+  ...Object.values(REMOVAL_CONFIG)
+    .flat()
+    .map((cfg) => cfg.selector),
+  'div.house-creative',
 ].join(', ');

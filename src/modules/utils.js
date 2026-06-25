@@ -19,7 +19,7 @@ export function debounce(func, wait) {
 }
 
 export function normalizeList(items) {
-  return [...new Set(items.map(s => (s || '').toLowerCase().trim()).filter(Boolean))];
+  return [...new Set(items.map((s) => (s || '').toLowerCase().trim()).filter(Boolean))];
 }
 
 export function parseListInputValue(value) {
@@ -98,18 +98,7 @@ export function isHomepageRoute(pathname = location.pathname) {
 
 export function isDiscoveryListRoute(pathname = location.pathname) {
   const normalizedPath = normalizePathname(pathname);
-  const discoveryRoutes = new Set([
-    '/',
-    '/latest',
-    '/new',
-    '/unseen',
-    '/hot',
-    '/top',
-    '/posted',
-    '/read',
-    '/bookmarks',
-    '/categories'
-  ]);
+  const discoveryRoutes = new Set(['/', '/latest', '/new', '/unseen', '/hot', '/top', '/posted', '/read', '/bookmarks', '/categories']);
   return discoveryRoutes.has(normalizedPath);
 }
 

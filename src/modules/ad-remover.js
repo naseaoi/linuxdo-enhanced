@@ -6,10 +6,11 @@ import {
   VISITED_TOPIC_CLASS,
   VISITED_TOPIC_ATTR,
   MAX_VISITED_TOPICS,
-  VISITED_TOPICS_PERSIST_DELAY
+  VISITED_TOPICS_PERSIST_DELAY,
 } from './constants.js';
 import { log, debounce } from './utils.js';
 import { GM_getValue, GM_setValue, GM_addStyle } from './gm.js';
+import { getSettingDefault, normalizeSettingValue } from './settings-schema.js';
 
 const AD_UI_REMOVER_MODULE = 'AdUIRemover';
 
@@ -23,7 +24,7 @@ let visitedTopicStyleRefreshDebounced = null;
 export function loadUiToggleSettings() {
   for (const key in UI_TOGGLE_KEYS) {
     const gmKey = UI_TOGGLE_KEYS[key];
-    currentUiToggleStates[gmKey] = GM_getValue(gmKey, DEFAULT_UI_TOGGLE_STATES[gmKey]);
+    currentUiToggleStates[gmKey] = GM_getValue(gmKey, getSettingDefault(gmKey) ?? DEFAULT_UI_TOGGLE_STATES[gmKey]);
   }
 }
 
@@ -39,20 +40,30 @@ export function saveUiToggleSettings() {
   log(AD_UI_REMOVER_MODULE, 'Saved UI toggle settings:', currentUiToggleStates);
 }
 
-export function loadVisitedTopics() {
+function readLegacyVisitedTopics() {
   try {
     const topicIds = JSON.parse(localStorage.getItem(VISITED_TOPICS_KEY) || '[]');
-    if (Array.isArray(topicIds)) {
-      visitedTopics = new Set(topicIds.slice(-MAX_VISITED_TOPICS));
-      if (topicIds.length !== visitedTopics.size) {
-        persistVisitedTopics();
-      }
-    } else {
-      visitedTopics = new Set();
-    }
+    return Array.isArray(topicIds) ? topicIds : [];
   } catch (e) {
     console.error('[LD Enhanced] Failed to load visited topics:', e);
-    visitedTopics = new Set();
+    return [];
+  }
+}
+
+export function loadVisitedTopics() {
+  let topicIds = GM_getValue(VISITED_TOPICS_KEY, null);
+  if (!Array.isArray(topicIds)) {
+    topicIds = readLegacyVisitedTopics();
+    if (topicIds.length > 0) {
+      GM_setValue(VISITED_TOPICS_KEY, normalizeSettingValue(VISITED_TOPICS_KEY, topicIds));
+    }
+  }
+
+  try {
+    visitedTopics = new Set(normalizeSettingValue(VISITED_TOPICS_KEY, topicIds));
+  } catch (e) {
+    console.error('[LD Enhanced] Failed to normalize visited topics:', e);
+    visitedTopics = new Set(getSettingDefault(VISITED_TOPICS_KEY));
   }
 }
 
@@ -62,7 +73,7 @@ export function persistVisitedTopics() {
     if (!oldestTopicId) break;
     visitedTopics.delete(oldestTopicId);
   }
-  localStorage.setItem(VISITED_TOPICS_KEY, JSON.stringify([...visitedTopics]));
+  GM_setValue(VISITED_TOPICS_KEY, [...visitedTopics]);
 }
 
 function queuePersistVisitedTopics() {
@@ -102,7 +113,7 @@ export function removeSelectedElementsFromDOM({ roots = null } = {}) {
   let elementsRemovedThisScan = 0;
   for (const toggleKey in currentUiToggleStates) {
     if (currentUiToggleStates[toggleKey] && REMOVAL_CONFIG[toggleKey]) {
-      REMOVAL_CONFIG[toggleKey].forEach(target => {
+      REMOVAL_CONFIG[toggleKey].forEach((target) => {
         const candidates = new Set();
         if (Array.isArray(roots) && roots.length > 0) {
           for (const root of roots) {
@@ -110,12 +121,12 @@ export function removeSelectedElementsFromDOM({ roots = null } = {}) {
             if (root.matches(target.selector)) {
               candidates.add(root);
             }
-            root.querySelectorAll(target.selector).forEach(element => candidates.add(element));
+            root.querySelectorAll(target.selector).forEach((element) => candidates.add(element));
           }
         } else {
-          document.querySelectorAll(target.selector).forEach(element => candidates.add(element));
+          document.querySelectorAll(target.selector).forEach((element) => candidates.add(element));
         }
-        candidates.forEach(element => {
+        candidates.forEach((element) => {
           if (element.offsetParent !== null) {
             const innerCheckSelector = target.innerCheck;
             let isConfirmedAd = !innerCheckSelector || element.querySelector(innerCheckSelector);
@@ -140,7 +151,7 @@ export function applyDynamicStyles() {
   let cssToInject = '';
   for (const toggleKey in currentUiToggleStates) {
     if (currentUiToggleStates[toggleKey] && REMOVAL_CONFIG[toggleKey]) {
-      REMOVAL_CONFIG[toggleKey].forEach(target => {
+      REMOVAL_CONFIG[toggleKey].forEach((target) => {
         cssToInject += `${target.selector} { display: none !important; visibility: hidden !important; }`;
       });
     }

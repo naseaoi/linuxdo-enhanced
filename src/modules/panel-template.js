@@ -4,11 +4,13 @@ import { blockOldPostsEnabled, blockOldPostsDays } from './item-blocker.js';
 import { ICONS } from './icons.js';
 
 function buildUiTogglesHtml() {
-  return Object.values(UI_TOGGLE_KEYS).map((gmKey) => {
-    const labelText = UI_TOGGLE_LABELS[gmKey] || gmKey;
-    const isChecked = currentUiToggleStates[gmKey];
-    return `<div class="setting-item"><span class="setting-item-label">${labelText}</span><label class="switch"><input type="checkbox" id="toggle-${gmKey}" ${isChecked ? 'checked' : ''}><span class="slider"></span></label></div>`;
-  }).join('');
+  return Object.values(UI_TOGGLE_KEYS)
+    .map((gmKey) => {
+      const labelText = UI_TOGGLE_LABELS[gmKey] || gmKey;
+      const isChecked = currentUiToggleStates[gmKey];
+      return `<div class="setting-item"><span class="setting-item-label">${labelText}</span><label class="switch"><input type="checkbox" id="toggle-${gmKey}" ${isChecked ? 'checked' : ''}><span class="slider"></span></label></div>`;
+    })
+    .join('');
 }
 
 function buildOldPostBlockerHtml() {

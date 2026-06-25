@@ -3,7 +3,7 @@ let lastNotifiedUrl = location.href;
 
 function wrapHistoryMethod(methodName, notifyRouteChange) {
   const originalMethod = history[methodName];
-  history[methodName] = function(...args) {
+  history[methodName] = function (...args) {
     const result = originalMethod.apply(this, args);
     notifyRouteChange();
     return result;
