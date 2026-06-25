@@ -212,7 +212,10 @@ function installRouteChangeListener() {
   if (routeListenerInstalled) return;
   routeListenerInstalled = true;
 
-  const notifyRouteChange = () => setTimeout(handleRouteChange, 120);
+  const notifyRouteChange = () => {
+    ensureSearchButtonExists();
+    setTimeout(handleRouteChange, 120);
+  };
   const originalPushState = history.pushState;
   const originalReplaceState = history.replaceState;
 

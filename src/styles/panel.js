@@ -1,7 +1,6 @@
 import {
   SETTINGS_PANEL_ID,
   SETTINGS_BUTTON_ID_HEADER,
-  SEARCH_BUTTON_ID_HEADER,
   GLOBAL_TOAST_ID,
   HIDDEN_ITEM_CLASS,
   PROCESSED_ITEM_ATTR,
@@ -240,13 +239,6 @@ export function buildBasePanelCss() {
     body:not(.${LIGHT_THEME_BODY_CLASS}) #${SETTINGS_BUTTON_ID_HEADER}:hover svg { fill: #e8eaed; }
     body.${LIGHT_THEME_BODY_CLASS} #${SETTINGS_BUTTON_ID_HEADER} svg { fill: #D0D0D0; }
     body.${LIGHT_THEME_BODY_CLASS} #${SETTINGS_BUTTON_ID_HEADER}:hover svg { fill: #909090; }
-    #${SEARCH_BUTTON_ID_HEADER} svg {
-      width: 20px; height: 20px; vertical-align: middle; transition: fill 0.2s ease;
-    }
-    body:not(.${LIGHT_THEME_BODY_CLASS}) #${SEARCH_BUTTON_ID_HEADER} svg { fill: #8B8B8B; }
-    body:not(.${LIGHT_THEME_BODY_CLASS}) #${SEARCH_BUTTON_ID_HEADER}:hover svg { fill: #e8eaed; }
-    body.${LIGHT_THEME_BODY_CLASS} #${SEARCH_BUTTON_ID_HEADER} svg { fill: #D0D0D0; }
-    body.${LIGHT_THEME_BODY_CLASS} #${SEARCH_BUTTON_ID_HEADER}:hover svg { fill: #909090; }
     #${SETTINGS_PANEL_ID}.light-theme {
       --ld-panel-bg: #ffffff;
       --ld-panel-border: #dcdcdc;

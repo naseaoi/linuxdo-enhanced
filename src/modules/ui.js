@@ -3,6 +3,7 @@ import {
   SETTINGS_BUTTON_ID_HEADER,
   SETTINGS_BUTTON_LI_ID,
   GLOBAL_TOAST_ID,
+  SEARCH_BUTTON_ID_HEADER,
   SEARCH_BUTTON_LI_ID,
   UI_TOGGLE_KEYS,
   UI_TOGGLE_LABELS,
@@ -11,7 +12,7 @@ import {
   WEBDAV_INPUT_IDS,
   CONFIG_KEY_PANEL_POS
 } from './constants.js';
-import { getInputValue, setInputValue, parseListInputValue, log } from './utils.js';
+import { getInputValue, setInputValue, parseListInputValue, log, isDiscoveryListRoute } from './utils.js';
 import { currentUiToggleStates, saveUiToggleSettings, applyDynamicStyles } from './ad-remover.js';
 import {
   blockOldPostsEnabled,
@@ -32,6 +33,7 @@ import { GM_getValue, GM_setValue, GM_addStyle } from './gm.js';
 let settingsButtonInjectInProgress = false;
 let panelJustOpened = false;
 let toastTimeout;
+let searchButtonRetryTimeout = null;
 
 function toggleNativeSearch() {
   try {
@@ -48,6 +50,14 @@ function toggleNativeSearch() {
     console.error('[LD Enhanced] Failed to toggle native search:', e);
     window.location.href = '/search?expanded=true';
   }
+}
+
+function queueSearchButtonRetry() {
+  if (searchButtonRetryTimeout) return;
+  searchButtonRetryTimeout = setTimeout(() => {
+    searchButtonRetryTimeout = null;
+    ensureSearchButtonExists();
+  }, 100);
 }
 
 function buildUiTogglesHtml() {
@@ -204,21 +214,30 @@ export function ensureSearchButtonExists() {
     shouldShow = GM_getValue(UI_TOGGLE_KEYS.headerSearchIcon, DEFAULT_UI_TOGGLE_STATES[UI_TOGGLE_KEYS.headerSearchIcon]);
   }
 
-  const isHomepage = location.pathname === '/' || location.pathname === '/latest' || location.pathname.startsWith('/latest');
+  const isDiscoveryList = isDiscoveryListRoute();
 
   let movedSearchLi = document.getElementById(SEARCH_BUTTON_LI_ID);
 
   if (!shouldShow) {
     if (movedSearchLi) {
-      movedSearchLi.style.display = 'none';
+      movedSearchLi.remove();
     }
     return;
   }
 
-  if (!isHomepage) {
+  if (!isDiscoveryList) {
     if (movedSearchLi) {
-      movedSearchLi.style.display = 'none';
+      movedSearchLi.remove();
     }
+    return;
+  }
+
+  const nativeSearchButton = document.getElementById('search-button');
+  if (nativeSearchButton) {
+    if (movedSearchLi) {
+      movedSearchLi.remove();
+    }
+    queueSearchButtonRetry();
     return;
   }
 
@@ -244,7 +263,7 @@ export function ensureSearchButtonExists() {
 
   const searchBtn = document.createElement('button');
   searchBtn.className = 'btn no-text btn-icon icon btn-flat';
-  searchBtn.id = 'search-button';
+  searchBtn.id = SEARCH_BUTTON_ID_HEADER;
   searchBtn.type = 'button';
   searchBtn.title = '搜索';
   searchBtn.setAttribute('aria-label', '搜索');

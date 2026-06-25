@@ -96,6 +96,23 @@ export function isHomepageRoute(pathname = location.pathname) {
   return normalizedPath === '/' || normalizedPath === '/latest';
 }
 
+export function isDiscoveryListRoute(pathname = location.pathname) {
+  const normalizedPath = normalizePathname(pathname);
+  const discoveryRoutes = new Set([
+    '/',
+    '/latest',
+    '/new',
+    '/unseen',
+    '/hot',
+    '/top',
+    '/posted',
+    '/read',
+    '/bookmarks',
+    '/categories'
+  ]);
+  return discoveryRoutes.has(normalizedPath);
+}
+
 export function nodeMatchesOrContains(node, selector) {
   if (!(node instanceof Element)) return false;
   return node.matches(selector) || node.querySelector(selector) !== null;
