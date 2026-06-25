@@ -21,8 +21,13 @@ export function installRouteObserver(onRouteChange) {
     onRouteChange(currentUrl);
   };
 
-  wrapHistoryMethod('pushState', notifyRouteChange);
-  wrapHistoryMethod('replaceState', notifyRouteChange);
-  window.addEventListener('popstate', notifyRouteChange);
-  window.addEventListener('hashchange', notifyRouteChange);
+  try {
+    wrapHistoryMethod('pushState', notifyRouteChange);
+    wrapHistoryMethod('replaceState', notifyRouteChange);
+    window.addEventListener('popstate', notifyRouteChange);
+    window.addEventListener('hashchange', notifyRouteChange);
+  } catch (error) {
+    routeObserverInstalled = false;
+    console.error('[LD Enhanced] Failed to install route observer:', error);
+  }
 }

@@ -26,7 +26,9 @@ import {
 } from './item-blocker.js';
 import { webdavUrl, webdavUser, webdavPass, saveWebdavSettings, backupToWebdav, restoreFromWebdav } from './webdav.js';
 import { applyPanelTheme, isDiscourseDarkMode } from './theme.js';
-import { buildBasePanelCss, buildToastCss, buildMobileCss } from '../styles/panel.js';
+import { buildBasePanelCss } from '../styles/panel.js';
+import { buildToastCss } from '../styles/toast.js';
+import { buildMobileCss } from '../styles/mobile.js';
 import { GM_getValue, GM_setValue, GM_addStyle } from './gm.js';
 import { ICONS } from './icons.js';
 import { buildPanelHtml } from './panel-template.js';

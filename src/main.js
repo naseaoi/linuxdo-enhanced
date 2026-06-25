@@ -210,11 +210,11 @@ function initializeScript() {
   loadOldPostBlockerSettings();
   loadWebdavSettings();
   createSettingsPanel(triggerFullReprocess);
+  refreshPageContext();
   installRouteObserver(() => {
     ensureSearchButtonExists();
     setTimeout(handleRouteChange, 120);
   });
-  refreshPageContext();
   runInitialScanWhenReady();
   setTimeout(applyPanelTheme, 200);
   triggerFullReprocess();

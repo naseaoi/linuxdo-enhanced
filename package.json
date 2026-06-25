@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "syntax": "node scripts/check-syntax.mjs",
+    "check": "npm run syntax && npm run build",
     "build": "vite build",
     "preview": "vite preview"
   },
