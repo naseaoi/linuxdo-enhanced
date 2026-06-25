@@ -19,14 +19,13 @@ import {
 import { loadWebdavSettings } from './modules/webdav.js';
 import { observeThemeChanges, applyPanelTheme } from './modules/theme.js';
 import { createSettingsPanel, injectBaseStyles, setupGlobalClickHandler, ensureSettingsButtonExists, ensureSearchButtonExists } from './modules/ui.js';
+import { installRouteObserver } from './modules/route-observer.js';
 
 let itemProcessingScheduled = false;
 let fullReprocessRequired = false;
 let domRemovalRequired = false;
 let itemFilterRequired = false;
 let pendingAdScanRoots = new Set();
-let routeListenerInstalled = false;
-let lastUrl = location.href;
 
 function processItemsNow({ runDomRemoval = true, runItemFilter = true, adScanRoots = null } = {}) {
   if (runDomRemoval) {
@@ -186,10 +185,6 @@ function refreshPageContext() {
 }
 
 function handleRouteChange() {
-  const currentUrl = location.href;
-
-  lastUrl = currentUrl;
-
   let attempts = 0;
   const maxAttempts = 20;
   const checkAndRefresh = () => {
@@ -208,38 +203,6 @@ function handleRouteChange() {
   setTimeout(checkAndRefresh, 100);
 }
 
-function installRouteChangeListener() {
-  if (routeListenerInstalled) return;
-  routeListenerInstalled = true;
-
-  const notifyRouteChange = () => {
-    ensureSearchButtonExists();
-    setTimeout(handleRouteChange, 120);
-  };
-  const originalPushState = history.pushState;
-  const originalReplaceState = history.replaceState;
-
-  history.pushState = function(...args) {
-    const result = originalPushState.apply(this, args);
-    notifyRouteChange();
-    return result;
-  };
-  history.replaceState = function(...args) {
-    const result = originalReplaceState.apply(this, args);
-    notifyRouteChange();
-    return result;
-  };
-
-  window.addEventListener('popstate', notifyRouteChange);
-  window.addEventListener('hashchange', notifyRouteChange);
-
-  setInterval(() => {
-    if (location.href !== lastUrl) {
-      notifyRouteChange();
-    }
-  }, 300);
-}
-
 function initializeScript() {
   resetProcessedItems();
   loadVisitedTopics();
@@ -247,7 +210,10 @@ function initializeScript() {
   loadOldPostBlockerSettings();
   loadWebdavSettings();
   createSettingsPanel(triggerFullReprocess);
-  installRouteChangeListener();
+  installRouteObserver(() => {
+    ensureSearchButtonExists();
+    setTimeout(handleRouteChange, 120);
+  });
   refreshPageContext();
   runInitialScanWhenReady();
   setTimeout(applyPanelTheme, 200);

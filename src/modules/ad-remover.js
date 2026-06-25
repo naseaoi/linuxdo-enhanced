@@ -156,14 +156,6 @@ export function applyDynamicStyles() {
   }
 
   if (currentUiToggleStates[UI_TOGGLE_KEYS.visitedTopicOpacity]) {
-    const visitedTopicSelectors = [];
-    visitedTopics.forEach((topicId) => {
-      if (!topicId) return;
-      visitedTopicSelectors.push(`tr.topic-list-item[data-topic-id="${topicId}"]`);
-      visitedTopicSelectors.push(`div.fps-result[data-topic-id="${topicId}"]`);
-      visitedTopicSelectors.push(`tr.topic-list-item[${VISITED_TOPIC_ATTR}="${topicId}"]`);
-      visitedTopicSelectors.push(`div.fps-result[${VISITED_TOPIC_ATTR}="${topicId}"]`);
-    });
     cssToInject += `
       tr.topic-list-item.${VISITED_TOPIC_CLASS},
       div.fps-result.${VISITED_TOPIC_CLASS} {
@@ -171,9 +163,6 @@ export function applyDynamicStyles() {
         transition: none !important;
       }
     `;
-    if (visitedTopicSelectors.length > 0) {
-      cssToInject += `${visitedTopicSelectors.join(',')} { opacity: 0.5 !important; transition: none !important; }`;
-    }
   }
 
   if (dynamicStyleElement && dynamicStyleElement.parentNode) {
