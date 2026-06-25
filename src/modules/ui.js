@@ -6,7 +6,6 @@ import {
   SEARCH_BUTTON_ID_HEADER,
   SEARCH_BUTTON_LI_ID,
   UI_TOGGLE_KEYS,
-  UI_TOGGLE_LABELS,
   DEFAULT_UI_TOGGLE_STATES,
   BLOCKER_INPUT_IDS,
   WEBDAV_INPUT_IDS,
@@ -29,6 +28,8 @@ import { webdavUrl, webdavUser, webdavPass, saveWebdavSettings, backupToWebdav, 
 import { applyPanelTheme, isDiscourseDarkMode } from './theme.js';
 import { buildBasePanelCss, buildToastCss, buildMobileCss } from '../styles/panel.js';
 import { GM_getValue, GM_setValue, GM_addStyle } from './gm.js';
+import { ICONS } from './icons.js';
+import { buildPanelHtml } from './panel-template.js';
 
 let settingsButtonInjectInProgress = false;
 let panelJustOpened = false;
@@ -58,45 +59,6 @@ function queueSearchButtonRetry() {
     searchButtonRetryTimeout = null;
     ensureSearchButtonExists();
   }, 100);
-}
-
-function buildUiTogglesHtml() {
-  return Object.values(UI_TOGGLE_KEYS).map((gmKey) => {
-    const labelText = UI_TOGGLE_LABELS[gmKey] || gmKey;
-    const isChecked = currentUiToggleStates[gmKey];
-    return `<div class="setting-item"><span class="setting-item-label">${labelText}</span><label class="switch"><input type="checkbox" id="toggle-${gmKey}" ${isChecked ? 'checked' : ''}><span class="slider"></span></label></div>`;
-  }).join('');
-}
-
-function buildOldPostBlockerHtml() {
-  return `<div class="setting-item-complex"><div class="label-group"><span>屏蔽</span><input type="number" id="ld-block-days-input" min="1" value="${blockOldPostsDays}"><span>天前的帖子</span></div><label class="switch"><input type="checkbox" id="toggle-block-old-posts" ${blockOldPostsEnabled ? 'checked' : ''}><span class="slider"></span></label></div>`;
-}
-
-function buildPanelHtml() {
-  return `
-    <div class="panel-header"><h3>增强控制面板</h3><div class="panel-header-actions">
-        <button id="ld-enhancer-save" class="panel-header-btn" aria-label="保存设置" title="保存设置"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 21V13H6V21H4C3.44772 21 3 20.5523 3 20V4C3 3.44772 3.44772 3 4 3H17L21 7V20C21 20.5523 20.5523 21 20 21H18ZM16 21H8V15H16V21Z"></path></svg></button>
-        <button id="ld-panel-close-btn" class="panel-header-btn" aria-label="关闭面板" title="关闭面板"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM12 10.5858L14.8284 7.75736L16.2426 9.17157L13.4142 12L16.2426 14.8284L14.8284 16.2426L12 13.4142L9.17157 16.2426L7.75736 14.8284L10.5858 12L7.75736 9.17157L9.17157 7.75736L12 10.5858Z"></path></svg></button>
-    </div></div>
-    <div class="panel-body"><div class="panel-sidebar"><ul>
-        <li data-tab="blocking" class="active">屏蔽功能</li><li data-tab="removal">功能开关</li><li data-tab="sync">云端同步</li>
-    </ul></div><div class="panel-main-content">
-        <div class="content-pane active" data-pane="blocking"><div class="blocking-stack">
-            <div class="pane-card blocking-section"><label for="ld-blocked-users" class="input-label">屏蔽用户</label><textarea id="ld-blocked-users" rows="4"></textarea></div>
-            <div class="pane-card blocking-section"><label for="ld-blocked-categories" class="input-label">屏蔽分区/标签</label><textarea id="ld-blocked-categories" rows="4"></textarea></div>
-            <div class="pane-card blocking-section"><label for="ld-blocked-keywords" class="input-label">屏蔽标题关键词</label><textarea id="ld-blocked-keywords" rows="4"></textarea></div>
-        </div></div>
-        <div class="content-pane" data-pane="removal"><div class="pane-card">${buildUiTogglesHtml()}${buildOldPostBlockerHtml()}</div></div>
-        <div class="content-pane" data-pane="sync">
-             <div class="pane-card"><label for="ld-webdav-url" class="input-label">WebDAV URL</label><input type="url" id="ld-webdav-url" placeholder="例如: https://dav.example.com/dav">
-             <div class="form-grid sync-credentials"><div><label for="ld-webdav-user" class="input-label">用户名</label><input type="text" id="ld-webdav-user" placeholder="WebDAV 用户名"></div><div><label for="ld-webdav-pass" class="input-label">密码</label><div class="password-field-wrap"><input type="password" id="ld-webdav-pass" placeholder="WebDAV 密码/应用密钥"><button type="button" id="ld-webdav-pass-toggle" class="password-toggle-btn" aria-label="显示密码" aria-pressed="false" title="显示密码"><svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12C3.114 8.649 7.195 6 12 6s8.886 2.649 9.938 6c-1.052 3.351-5.133 6-9.938 6s-8.886-2.649-9.938-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg><svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M10.584 10.587a2 2 0 0 0 2.828 2.828"></path><path d="M9.363 5.365A10.954 10.954 0 0 1 12 5c4.805 0 8.886 2.649 9.938 6a11.817 11.817 0 0 1-4.226 5.198"></path><path d="M6.228 6.228A11.817 11.817 0 0 0 2.062 12c1.052 3.351 5.133 6 9.938 6 1.772 0 3.446-.36 4.934-1.002"></path></svg></button></div></div></div></div>
-             <div class="pane-card sync-warning"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg><span>密码以明文保存在本地存储中，请仅在可信设备使用。</span></div>
-             <div class="webdav-actions">
-                 <button id="ld-webdav-backup" class="webdav-btn restore-btn">备份到云端</button>
-                 <button id="ld-webdav-restore" class="webdav-btn">从云端恢复</button>
-             </div>
-        </div>
-    </div></div>`;
 }
 
 export function togglePanelVisibility(show) {
@@ -164,7 +126,7 @@ export function ensureSettingsButtonExists() {
       toggleBtn.title = '增强控制设置';
       toggleBtn.type = 'button';
       toggleBtn.setAttribute('aria-label', '增强控制设置');
-      toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5.33409 4.54491C6.3494 3.63637 7.55145 2.9322 8.87555 2.49707C9.60856 3.4128 10.7358 3.99928 12 3.99928C13.2642 3.99928 14.3914 3.4128 15.1245 2.49707C16.4486 2.9322 17.6506 3.63637 18.6659 4.54491C18.2405 5.637 18.2966 6.90531 18.9282 7.99928C19.5602 9.09388 20.6314 9.77679 21.7906 9.95392C21.9279 10.6142 22 11.2983 22 11.9993C22 12.7002 21.9279 13.3844 21.7906 14.0446C20.6314 14.2218 19.5602 14.9047 18.9282 15.9993C18.2966 17.0932 18.2405 18.3616 18.6659 19.4536C17.6506 20.3622 16.4486 21.0664 15.1245 21.5015C14.3914 20.5858 13.2642 19.9993 12 19.9993C10.7358 19.9993 9.60856 20.5858 8.87555 21.5015C7.55145 21.0664 6.3494 20.3622 5.33409 19.4536C5.75952 18.3616 5.7034 17.0932 5.0718 15.9993C4.43983 14.9047 3.36862 14.2218 2.20935 14.0446C2.07212 13.3844 2 12.7002 2 11.9993C2 11.2983 2.07212 10.6142 2.20935 9.95392C3.36862 9.77679 4.43983 9.09388 5.0718 7.99928C5.7034 6.90531 5.75952 5.637 5.33409 4.54491ZM13.5 14.5974C14.9349 13.7689 15.4265 11.9342 14.5981 10.4993C13.7696 9.0644 11.9349 8.57277 10.5 9.4012C9.06512 10.2296 8.5735 12.0644 9.40192 13.4993C10.2304 14.9342 12.0651 15.4258 13.5 14.5974Z"></path></svg>`;
+      toggleBtn.innerHTML = ICONS.settings;
       newLi.appendChild(toggleBtn);
 
       const languageSwitcher = headerIconsUl.querySelector('.language-switcher-trigger');
@@ -268,7 +230,7 @@ export function ensureSearchButtonExists() {
   searchBtn.title = '搜索';
   searchBtn.setAttribute('aria-label', '搜索');
   searchBtn.setAttribute('aria-haspopup', 'true');
-  searchBtn.innerHTML = `<svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg><span aria-hidden="true">​</span>`;
+  searchBtn.innerHTML = ICONS.search;
 
   newLi.appendChild(searchBtn);
 
