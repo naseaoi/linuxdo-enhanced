@@ -8,7 +8,7 @@ export default defineConfig({
       userscript: {
         name: 'Linux.do 增强脚本',
         namespace: 'http://tampermonkey.net/',
-        version: '8.24.1',
+        version: '1.0.0',
         description: '去除广告，根据用户名、分区、标签和关键词屏蔽帖子，支持屏蔽指定天数前的旧帖，支持 WebDAV 同步，并自动适配网站主题。',
         author: 'fork25 & AI Assistant',
         match: ['https://linux.do/*'],

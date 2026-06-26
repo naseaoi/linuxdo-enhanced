@@ -21,11 +21,11 @@ import {
 } from './item-blocker.js';
 import { webdavUrl, webdavUser, webdavPass, saveWebdavSettings, backupToWebdav, restoreFromWebdav } from './webdav.js';
 import { applyPanelTheme } from './theme.js';
-import { buildBasePanelCss } from '../styles/panel.js';
+import { buildBasePanelCss } from '../styles/panel-v2.js';
 import { buildToastCss } from '../styles/toast.js';
 import { buildMobileCss } from '../styles/mobile.js';
 import { GM_getValue, GM_addStyle } from './gm.js';
-import { buildPanelHtml } from './panel-template.js';
+import { buildPanelHtml } from './panel-template-v2.js';
 import { ensureSettingsButtonExists, ensureSearchButtonExists, setSettingsButtonHandler } from './header-buttons.js';
 import { makePanelDraggable } from './panel-drag.js';
 import { showGlobalToast } from './toast-controller.js';
@@ -221,37 +221,17 @@ function bindPanelEvents(panel, triggerFullReprocessFn) {
     toggleBtn.setAttribute('title', shouldShowPassword ? '隐藏密码' : '显示密码');
     passInput.focus({ preventScroll: true });
   });
-  panel.querySelector('.panel-sidebar').addEventListener('click', (e) => {
-    const targetLi = e.target.closest('li[data-tab]');
-    if (!targetLi) return;
-    const tabId = targetLi.dataset.tab;
-    panel.querySelectorAll('.panel-sidebar li').forEach((li) => li.classList.remove('active'));
-    targetLi.classList.add('active');
-    panel.querySelectorAll('.content-pane').forEach((pane) => pane.classList.remove('active'));
-    panel.querySelector(`.content-pane[data-pane="${tabId}"]`).classList.add('active');
+
+  panel.querySelectorAll('.section-header').forEach((header) => {
+    header.addEventListener('click', () => {
+      const card = header.closest('.section-card');
+      if (card) {
+        card.classList.toggle('expanded');
+      }
+    });
   });
 }
 
-function lockPanelHeight(panel) {
-  if (!panel || window.innerWidth <= 700) return;
-  const blockingPane = panel.querySelector('.content-pane[data-pane="blocking"]');
-  const activePanes = panel.querySelectorAll('.content-pane.active');
-  activePanes.forEach((pane) => pane.classList.remove('active'));
-  if (blockingPane) {
-    blockingPane.classList.add('active');
-  }
-
-  const fixedHeight = panel.offsetHeight;
-
-  if (blockingPane) {
-    blockingPane.classList.remove('active');
-  }
-  activePanes.forEach((pane) => pane.classList.add('active'));
-
-  if (fixedHeight > 0) {
-    panel.style.height = `${fixedHeight}px`;
-  }
-}
 
 function handleSettingsButtonToggle() {
   const panel = document.getElementById(SETTINGS_PANEL_ID);
@@ -280,15 +260,11 @@ export function createSettingsPanel(triggerFullReprocessFn) {
     if (savedPosition?.x && savedPosition?.y) {
       panel.style.left = savedPosition.x;
       panel.style.top = savedPosition.y;
+      panel.style.transform = 'none';
     }
-  } else {
-    panel.style.left = '';
-    panel.style.top = '';
-    panel.style.right = '';
   }
   panel.innerHTML = buildPanelHtml();
   document.body.appendChild(panel);
-  lockPanelHeight(panel);
   updatePanelInputs();
   applyPanelTheme();
   bindPanelEvents(panel, triggerFullReprocessFn);
