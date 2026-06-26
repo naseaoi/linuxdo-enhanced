@@ -2,6 +2,7 @@ import {
   UI_TOGGLE_KEYS,
   UI_TOGGLE_LABELS,
   SCRIPT_VERSION,
+  GITHUB_REPO,
   UPDATE_CHECK_INTERVAL_DAYS,
   UPDATE_CHECK_INTERVAL_LABELS,
 } from './constants.js';
@@ -167,6 +168,9 @@ export function buildPanelHtml() {
     <div class="panel-header">
       <h3 class="panel-title">增强控制面板</h3>
       <div class="panel-header-actions">
+        <a href="https://github.com/${GITHUB_REPO}" target="_blank" rel="noopener noreferrer" id="ld-panel-github-btn" class="panel-icon-btn" aria-label="访问 GitHub" title="访问 GitHub">
+          ${ICONS.github}
+        </a>
         <button id="ld-enhancer-save" class="panel-icon-btn" aria-label="保存设置" title="保存设置">
           ${ICONS.save}
         </button>

@@ -100,6 +100,8 @@ export function buildBasePanelCss() {
       cursor: pointer;
       transition: background-color 0.15s ease;
       padding: 0;
+      color: inherit;
+      text-decoration: none;
     }
 
     #${SETTINGS_PANEL_ID} .panel-icon-btn:hover {

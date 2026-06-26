@@ -1,6 +1,6 @@
 export const DEBUG = false;
 
-export const SCRIPT_VERSION = '1.0.0';
+export const SCRIPT_VERSION = '1.0.1';
 export const GITHUB_REPO = 'naseaoi/linuxdo-enhanced';
 
 export const UI_TOGGLE_KEYS = {
