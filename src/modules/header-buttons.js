@@ -25,7 +25,13 @@ function findHeaderIconsContainer() {
 
 function toggleNativeSearch() {
   try {
-    const { getOwnerWithFallback } = window.require('discourse-common/lib/get-owner');
+    const globalRequire = window['require'] || (typeof require !== 'undefined' && require);
+    if (!globalRequire || typeof globalRequire !== 'function') {
+      window.location.href = '/search?expanded=true';
+      return;
+    }
+
+    const { getOwnerWithFallback } = globalRequire('discourse-common/lib/get-owner');
     const owner = getOwnerWithFallback();
     const searchService = owner.lookup('service:search');
 
@@ -138,7 +144,6 @@ export function ensureSearchButtonExists() {
 
   const newLi = document.createElement('li');
   newLi.id = SEARCH_BUTTON_LI_ID;
-  newLi.className = 'header-dropdown-toggle search-dropdown';
 
   const searchBtn = document.createElement('button');
   searchBtn.className = 'btn no-text btn-icon icon btn-flat';
@@ -146,7 +151,6 @@ export function ensureSearchButtonExists() {
   searchBtn.type = 'button';
   searchBtn.title = '搜索';
   searchBtn.setAttribute('aria-label', '搜索');
-  searchBtn.setAttribute('aria-haspopup', 'true');
   searchBtn.innerHTML = ICONS.search;
 
   newLi.appendChild(searchBtn);
@@ -163,9 +167,14 @@ export function ensureSearchButtonExists() {
     }
   }
 
-  searchBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleNativeSearch();
-  });
+  searchBtn.addEventListener(
+    'click',
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      toggleNativeSearch();
+    },
+    true,
+  );
 }
