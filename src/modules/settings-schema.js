@@ -7,6 +7,10 @@ import {
   CONFIG_KEY_PANEL_POS,
   CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED,
   CONFIG_KEY_BLOCK_OLD_POSTS_DAYS,
+  CONFIG_KEY_UPDATE_CHECK_INTERVAL,
+  CONFIG_KEY_UPDATE_LAST_CHECK,
+  DEFAULT_UPDATE_CHECK_INTERVAL,
+  UPDATE_CHECK_INTERVAL_DAYS,
   VISITED_TOPICS_KEY,
   MAX_VISITED_TOPICS,
 } from './constants.js';
@@ -18,6 +22,8 @@ const SETTING_TYPES = {
   panelPosition: 'panelPosition',
   positiveInteger: 'positiveInteger',
   topicList: 'topicList',
+  updateInterval: 'updateInterval',
+  timestamp: 'timestamp',
 };
 
 const UI_TOGGLE_SETTING_DEFINITIONS = Object.values(UI_TOGGLE_KEYS).map((key) => ({
@@ -35,6 +41,8 @@ export const SETTING_DEFINITIONS = [
   { key: CONFIG_KEY_PANEL_POS, type: SETTING_TYPES.panelPosition, defaultValue: null, backup: true },
   { key: CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED, type: SETTING_TYPES.boolean, defaultValue: false, backup: true },
   { key: CONFIG_KEY_BLOCK_OLD_POSTS_DAYS, type: SETTING_TYPES.positiveInteger, defaultValue: 90, backup: true },
+  { key: CONFIG_KEY_UPDATE_CHECK_INTERVAL, type: SETTING_TYPES.updateInterval, defaultValue: DEFAULT_UPDATE_CHECK_INTERVAL, backup: true },
+  { key: CONFIG_KEY_UPDATE_LAST_CHECK, type: SETTING_TYPES.timestamp, defaultValue: 0, backup: false },
   { key: VISITED_TOPICS_KEY, type: SETTING_TYPES.topicList, defaultValue: [], backup: true },
 ];
 
@@ -94,6 +102,22 @@ function normalizePositiveIntegerSetting(value, key) {
   return numberValue;
 }
 
+function normalizeUpdateIntervalSetting(value, key) {
+  const numberValue = Number(value);
+  if (!UPDATE_CHECK_INTERVAL_DAYS.includes(numberValue)) {
+    throw new Error(`配置 ${key} 类型无效`);
+  }
+  return numberValue;
+}
+
+function normalizeTimestampSetting(value, key) {
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue) || numberValue < 0) {
+    throw new Error(`配置 ${key} 类型无效`);
+  }
+  return numberValue;
+}
+
 export function normalizeSettingValue(key, value) {
   const definition = SETTING_DEFINITION_MAP.get(key);
   if (!definition) return undefined;
@@ -112,6 +136,12 @@ export function normalizeSettingValue(key, value) {
   }
   if (definition.type === SETTING_TYPES.positiveInteger) {
     return normalizePositiveIntegerSetting(value, key);
+  }
+  if (definition.type === SETTING_TYPES.updateInterval) {
+    return normalizeUpdateIntervalSetting(value, key);
+  }
+  if (definition.type === SETTING_TYPES.timestamp) {
+    return normalizeTimestampSetting(value, key);
   }
   return undefined;
 }

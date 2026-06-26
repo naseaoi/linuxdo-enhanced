@@ -29,6 +29,7 @@ import { buildPanelHtml } from './panel-template.js';
 import { ensureSettingsButtonExists, ensureSearchButtonExists, setSettingsButtonHandler } from './header-buttons.js';
 import { makePanelDraggable } from './panel-drag.js';
 import { showGlobalToast } from './toast-controller.js';
+import { checkForUpdates, saveUpdateCheckInterval } from './version-checker.js';
 
 let panelJustOpened = false;
 
@@ -135,11 +136,77 @@ async function handleRestore(triggerFullReprocessFn) {
   }
 }
 
+function renderUpdateResult(resultEl, { state, result }) {
+  resultEl.hidden = false;
+  resultEl.className = 'update-result';
+  resultEl.textContent = '';
+
+  if (state === 'checking') {
+    resultEl.classList.add('is-checking');
+    resultEl.textContent = '正在检测更新...';
+    return;
+  }
+  if (state === 'error') {
+    resultEl.classList.add('is-error');
+    resultEl.textContent = '检测失败，请稍后重试。';
+    return;
+  }
+  if (!result.hasUpdate) {
+    resultEl.classList.add('is-latest');
+    resultEl.textContent = `当前已是最新版本 v${result.currentVersion}`;
+    return;
+  }
+
+  resultEl.classList.add('has-update');
+  const title = document.createElement('div');
+  title.className = 'update-result-title';
+  title.textContent = `发现新版本 v${result.latestVersion}`;
+
+  const installBtn = document.createElement('a');
+  installBtn.className = 'webdav-btn restore-btn update-install-btn';
+  installBtn.href = result.downloadUrl;
+  installBtn.target = '_blank';
+  installBtn.rel = 'noopener noreferrer';
+  installBtn.textContent = '安装新版本';
+
+  resultEl.append(title, installBtn);
+
+  if (result.notes) {
+    const notesLabel = document.createElement('div');
+    notesLabel.className = 'update-notes-label';
+    notesLabel.textContent = '更新说明';
+    const notes = document.createElement('pre');
+    notes.className = 'update-notes';
+    notes.textContent = result.notes;
+    resultEl.append(notesLabel, notes);
+  }
+}
+
+async function handleManualUpdateCheck(panel) {
+  const resultEl = panel.querySelector('#ld-update-result');
+  const button = panel.querySelector('#ld-check-updates');
+  if (!resultEl || !button) return;
+
+  button.disabled = true;
+  renderUpdateResult(resultEl, { state: 'checking' });
+  try {
+    const result = await checkForUpdates();
+    renderUpdateResult(resultEl, { state: 'done', result });
+  } catch (error) {
+    renderUpdateResult(resultEl, { state: 'error' });
+    console.error('[LD Enhanced] Version check error:', error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function bindPanelEvents(panel, triggerFullReprocessFn) {
   panel.querySelector('#ld-enhancer-save').addEventListener('click', () => saveAllSettingsAndApply(triggerFullReprocessFn));
   panel.querySelector('#ld-panel-close-btn').addEventListener('click', () => togglePanelVisibility(false));
   panel.querySelector('#ld-webdav-backup').addEventListener('click', handleBackup);
   panel.querySelector('#ld-webdav-restore').addEventListener('click', () => handleRestore(triggerFullReprocessFn));
+  panel.querySelector('#ld-check-updates')?.addEventListener('click', () => handleManualUpdateCheck(panel));
+  panel.querySelector('#ld-update-interval')?.addEventListener('change', (event) => saveUpdateCheckInterval(event.target.value));
   panel.querySelector('#ld-webdav-pass-toggle')?.addEventListener('mousedown', (event) => {
     event.preventDefault();
   });

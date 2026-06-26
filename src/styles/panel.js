@@ -231,6 +231,41 @@ export function buildBasePanelCss() {
     .webdav-btn:hover { background-color: var(--ld-webdav-hover-bg); border-color: var(--ld-webdav-hover-border); }
     .webdav-btn.restore-btn { background-color: #3b82f6; border-color: #3b82f6; color: #ffffff; }
     .webdav-btn.restore-btn:hover { background-color: #2563eb; border-color: #2563eb; }
+    #${SETTINGS_PANEL_ID} .content-pane[data-pane="update"] .pane-card:not(:first-of-type) { margin-top: 12px; }
+    #${SETTINGS_PANEL_ID} .update-version-info {
+      font-size: 13px; color: var(--ld-sidebar-text); font-weight: 500; margin-bottom: 12px;
+    }
+    #${SETTINGS_PANEL_ID} .update-interval-select {
+      width: auto; min-width: 110px; padding: 7px 10px; border: 1px solid var(--ld-input-border);
+      border-radius: 6px; background-color: var(--ld-input-bg); color: var(--ld-panel-text);
+      font-size: 13px; cursor: pointer; transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+    }
+    #${SETTINGS_PANEL_ID} .update-interval-select:focus {
+      border-color: var(--ld-input-focus-border); box-shadow: 0 0 0 3px var(--ld-input-focus-shadow); outline: none;
+    }
+    #${SETTINGS_PANEL_ID} .update-check-btn { flex-grow: 0; width: auto; padding: 8px 18px; }
+    #${SETTINGS_PANEL_ID} .update-check-btn:disabled { opacity: 0.6; cursor: default; }
+    #${SETTINGS_PANEL_ID} .update-result {
+      margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--ld-panel-border); font-size: 13px;
+    }
+    #${SETTINGS_PANEL_ID} .update-result.is-checking,
+    #${SETTINGS_PANEL_ID} .update-result.is-latest { color: var(--ld-sidebar-text); }
+    #${SETTINGS_PANEL_ID} .update-result.is-error { color: #ef4444; }
+    #${SETTINGS_PANEL_ID} .update-result-title { font-size: 14px; font-weight: 600; color: var(--ld-panel-text); margin-bottom: 10px; }
+    #${SETTINGS_PANEL_ID} .update-install-btn { display: inline-block; width: auto; padding: 8px 18px; text-decoration: none; }
+    #${SETTINGS_PANEL_ID} .update-notes-label {
+      margin-top: 14px; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--ld-sidebar-text);
+    }
+    #${SETTINGS_PANEL_ID} .update-notes {
+      margin: 0; max-height: 220px; overflow-y: auto; padding: 10px 12px; border-radius: 6px;
+      background-color: var(--ld-webdav-bg); color: var(--ld-panel-text); font-size: 12px; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-word;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      scrollbar-width: thin; scrollbar-color: var(--ld-main-scrollbar) var(--ld-panel-bg);
+    }
+    #${SETTINGS_PANEL_ID} .update-notes::-webkit-scrollbar { width: 8px; }
+    #${SETTINGS_PANEL_ID} .update-notes::-webkit-scrollbar-track { background: var(--ld-main-scroll-track); border-radius: 4px; }
+    #${SETTINGS_PANEL_ID} .update-notes::-webkit-scrollbar-thumb { background-color: var(--ld-main-scrollbar); border-radius: 4px; border: 2px solid var(--ld-main-scroll-track); }
     #${SETTINGS_BUTTON_ID_HEADER} svg {
       width: 35px; height: 35px; vertical-align: -11px; transition: fill 0.2s ease;
     }

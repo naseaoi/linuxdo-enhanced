@@ -1,5 +1,8 @@
 export const DEBUG = false;
 
+export const SCRIPT_VERSION = '8.24.1';
+export const GITHUB_REPO = 'naseaoi/linuxdo-enhanced';
+
 export const UI_TOGGLE_KEYS = {
   globalNotice: 'ld_hide_global_notice',
   homepageTopAd: 'ld_hide_homepage_top_ad',
@@ -33,6 +36,18 @@ export const CONFIG_KEY_CATEGORIES = 'linuxdo_blocked_categories';
 export const CONFIG_KEY_PANEL_POS = 'linuxdo_panel_position';
 export const CONFIG_KEY_BLOCK_OLD_POSTS_ENABLED = 'ld_block_old_posts_enabled';
 export const CONFIG_KEY_BLOCK_OLD_POSTS_DAYS = 'ld_block_old_posts_days';
+
+export const CONFIG_KEY_UPDATE_CHECK_INTERVAL = 'ld_update_check_interval';
+export const CONFIG_KEY_UPDATE_LAST_CHECK = 'ld_update_last_check';
+export const UPDATE_CHECK_INTERVAL_DAYS = [0, 1, 3, 7, 30];
+export const DEFAULT_UPDATE_CHECK_INTERVAL = 7;
+export const UPDATE_CHECK_INTERVAL_LABELS = {
+  0: '从不',
+  1: '每天',
+  3: '每三天',
+  7: '每周',
+  30: '每月',
+};
 
 export const CONFIG_KEY_WEBDAV_URL = 'ld_webdav_url';
 export const CONFIG_KEY_WEBDAV_USER = 'ld_webdav_user';

@@ -16,6 +16,7 @@ import {
   syncVisitedTopicOpacityState,
 } from './modules/item-blocker.js';
 import { loadWebdavSettings } from './modules/webdav.js';
+import { loadUpdateCheckSettings, runAutoUpdateCheck } from './modules/version-checker.js';
 import { observeThemeChanges, applyPanelTheme } from './modules/theme.js';
 import { createSettingsPanel, injectBaseStyles, setupGlobalClickHandler } from './modules/ui.js';
 import { ensureSettingsButtonExists, ensureSearchButtonExists } from './modules/header-buttons.js';
@@ -148,6 +149,7 @@ function initializeScript() {
   loadBlockerSettings();
   loadOldPostBlockerSettings();
   loadWebdavSettings();
+  loadUpdateCheckSettings();
   createSettingsPanel(triggerFullReprocess);
   refreshPageContext();
   installRouteObserver(() => {
@@ -167,6 +169,8 @@ function initializeScript() {
   });
 
   window.addEventListener('beforeunload', persistVisitedTopics);
+
+  setTimeout(runAutoUpdateCheck, 5000);
 }
 
 initAdUIRemoverEarly();
